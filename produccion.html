@@ -92,7 +92,7 @@
 
     async function cargarProducciones() {
       try {
-        const res = await fetch(`${backendURL}/api/produccion`);
+        const res = await fetch(`${backendURL}/api/producciones`);
         producciones = await res.json();
 
         mostrarGeneral();
