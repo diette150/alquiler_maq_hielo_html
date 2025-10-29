@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>SCADA - Tiempo Real</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body{font-family:Arial;}
+    .grid{display:flex;flex-wrap:wrap;gap:12px;}
+    .card{width:220px;padding:12px;border-radius:8px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+    .frio{color:blue;font-weight:bold}
+    .calor{color:red;font-weight:bold}
+  </style>
+</head>
+<body>
+  <h2>SCADA - Tiempo real</h2>
+  <label>Backend URL: <input id="backend" value="http://localhost:3100"></label>
+  <button id="connect">Conectar</button>
+  <div>
+    <button id="subscribeAll">Suscribirse (todos)</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+<script>
+  let socket;
+  document.getElementById('connect').addEventListener('click', () => {
+    const backend = document.getElementById('backend').value;
+    socket = io("https://alquiler-maquina-hielo.onrender.com");
+    socket.on('connect', () => console.log('Socket conectado', socket.id));
+    socket.on('updateScada', d => {
+      showCard(d);
+    });
+    socket.on('nuevaProduccion', p => {
+      console.log('Nueva producción guardada:', p);
+    });
+  });
+
+  function showCard(data) {
+    const id = data.machineID;
+    let card = document.getElementById('card_' + id);
+    if (!card) {
+      card = document.createElement('div');
+      card.id = 'card_' + id;
+      card.className = 'card';
+      document.getElementById('grid').appendChild(card);
+    }
+    const estadoClass = data.estado === 'FRIO' ? 'frio' : 'calor';
+    const remaining = Math.max(0, Math.round(data.tiempoRestante / 1000)); // si envia ms
+    card.innerHTML = `<h3>${id}</h3>
+                      <div class="${estadoClass}">${data.estado}</div>
+                      <div>Tiempo restante: ${remaining}s</div>
+                      <div>Última actualización: ${new Date().toLocaleTimeString()}</div>`;
+  }
+
+  document.getElementById('subscribeAll').addEventListener('click', () => {
+    // Si quieres usar rooms, puedes implementar "subscribe" en el backend.
+    // Aquí solo una acción visual.
+    alert('Aplicación subscribirá a actualizaciones globales (emit desde backend).');
+  });
+</script>
+</body>
+</html>

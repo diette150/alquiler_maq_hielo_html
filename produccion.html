@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producción de Máquinas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f3;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .contenedor {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+    select {
+      padding: 6px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #0078D7;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Registro de Producción</h1>
+  <div class="contenedor">
+    <label for="maquinaSelect">Selecciona una máquina:</label>
+    <select id="maquinaSelect">
+      <option value="">Todas</option>
+    </select>
+
+    <h3>Tabla General</h3>
+    <table id="tablaGeneral">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ID Máquina</th>
+          <th>Producción Total</th>
+          <th>Fecha y Hora</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Producción por Máquina</h3>
+    <table id="tablaFiltrada">
+      <thead>
+        <tr>
+          <th># Producción</th>
+          <th>Producción Total (Global)</th>
+          <th>Fecha y Hora</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const backendURL = "https://alquiler-maquina-hielo.onrender.com"; // <--- cambia por tu URL real
+
+    const maquinaSelect = document.getElementById("maquinaSelect");
+    const tbodyGeneral = document.querySelector("#tablaGeneral tbody");
+    const tbodyFiltrada = document.querySelector("#tablaFiltrada tbody");
+
+    let producciones = [];
+
+    async function cargarProducciones() {
+      try {
+        const res = await fetch(`${backendURL}/api/produccion`);
+        producciones = await res.json();
+
+        mostrarGeneral();
+        llenarSelect();
+      } catch (err) {
+        console.error("Error cargando producciones:", err);
+      }
+    }
+
+    function mostrarGeneral() {
+      tbodyGeneral.innerHTML = "";
+      producciones.forEach((p, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${p.machineID}</td>
+          <td>${p.produccion}</td>
+          <td>${new Date(p.fecha).toLocaleString()}</td>
+        `;
+        tbodyGeneral.appendChild(tr);
+      });
+    }
+
+    function llenarSelect() {
+      const maquinas = [...new Set(producciones.map(p => p.machineID))];
+      maquinaSelect.innerHTML = '<option value="">Todas</option>';
+      maquinas.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        maquinaSelect.appendChild(opt);
+      });
+    }
+
+    function mostrarPorMaquina(id) {
+      tbodyFiltrada.innerHTML = "";
+
+      if (!id) return;
+
+      const filtradas = producciones.filter(p => p.machineID === id);
+      filtradas.forEach((p, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${p.produccion}</td>
+          <td>${new Date(p.fecha).toLocaleString()}</td>
+        `;
+        tbodyFiltrada.appendChild(tr);
+      });
+    }
+
+    maquinaSelect.addEventListener("change", e => {
+      mostrarPorMaquina(e.target.value);
+    });
+
+    // Cargar al abrir la página
+    cargarProducciones();
+  </script>
+</body>
+</html>
