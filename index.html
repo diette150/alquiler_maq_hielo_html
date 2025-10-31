@@ -1,16 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>IceMaker - Panel</title>
+<meta charset="utf-8">
+<title>IceMaker - Panel</title>
 </head>
 <body>
-  <h1>IceMaker - Panel</h1>
-  <ul>
-    <li><a href="ingresar.html">Ingresar datos (configuración inicial desde AP del ESP)</a></li>
-    <li><a href="produccion.html">Producción</a></li>
-    <li><a href="scada.html">SCADA en tiempo real</a></li>
-  </ul>
-  <p>Recomendación: abre estas páginas desde un servidor local o colócalas en <code>backend/public</code>.</p>
+<h1>IceMaker - Panel</h1>
+
+<ul>
+  <li><a href="ingresar.html">Ingresar datos (configuración inicial del ESP)</a></li>
+  <li><a href="produccion.html">Producción</a></li>
+  <li><a href="scada.html">SCADA en tiempo real</a></li>
+</ul>
+
+<h3>Tabla General</h3>
+<table border="1" id="tablaGeneral">
+<thead>
+<tr>
+  <th>#</th>
+  <th>Máquina</th>
+  <th>Fecha y Hora</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+const backendURL = "https://alquiler-maquina-hielo.onrender.com";
+const tbody = document.querySelector("#tablaGeneral tbody");
+
+async function cargar() {
+  const res = await fetch(`${backendURL}/api/producciones`);
+  let datos = await res.json();
+
+  datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+  tbody.innerHTML = "";
+  datos.forEach((p,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${p.machineID}</td>
+        <td>${new Date(p.fecha).toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+cargar();
+</script>
+
+<p>Recomendación: sirva esta página desde un servidor o colóquela en <code>backend/public</code>.</p>
+
 </body>
 </html>

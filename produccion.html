@@ -50,6 +50,7 @@
 <body>
   <h1>Registro de Producción</h1>
   <div class="contenedor">
+
     <label for="maquinaSelect">Selecciona una máquina:</label>
     <select id="maquinaSelect">
       <option value="">Todas</option>
@@ -61,7 +62,6 @@
         <tr>
           <th>#</th>
           <th>ID Máquina</th>
-          <th>Producción Total</th>
           <th>Fecha y Hora</th>
         </tr>
       </thead>
@@ -72,8 +72,8 @@
     <table id="tablaFiltrada">
       <thead>
         <tr>
-          <th># Producción</th>
-          <th>Producción Total (Global)</th>
+          <th>#</th>
+          <th>ID Máquina</th>
           <th>Fecha y Hora</th>
         </tr>
       </thead>
@@ -82,7 +82,7 @@
   </div>
 
   <script>
-    const backendURL = "https://alquiler-maquina-hielo.onrender.com"; // <--- cambia por tu URL real
+    const backendURL = "https://alquiler-maquina-hielo.onrender.com";
 
     const maquinaSelect = document.getElementById("maquinaSelect");
     const tbodyGeneral = document.querySelector("#tablaGeneral tbody");
@@ -94,6 +94,9 @@
       try {
         const res = await fetch(`${backendURL}/api/producciones`);
         producciones = await res.json();
+
+        // Ordenar por fecha más antigua primero
+        producciones.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
         mostrarGeneral();
         llenarSelect();
@@ -109,7 +112,6 @@
         tr.innerHTML = `
           <td>${i + 1}</td>
           <td>${p.machineID}</td>
-          <td>${p.produccion}</td>
           <td>${new Date(p.fecha).toLocaleString()}</td>
         `;
         tbodyGeneral.appendChild(tr);
@@ -137,7 +139,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${i + 1}</td>
-          <td>${p.produccion}</td>
+          <td>${p.machineID}</td>
           <td>${new Date(p.fecha).toLocaleString()}</td>
         `;
         tbodyFiltrada.appendChild(tr);
@@ -148,7 +150,6 @@
       mostrarPorMaquina(e.target.value);
     });
 
-    // Cargar al abrir la página
     cargarProducciones();
   </script>
 </body>
